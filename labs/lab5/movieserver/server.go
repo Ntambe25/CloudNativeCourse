@@ -11,7 +11,7 @@ import (
 
 	//"gitlab.com/arunravindran/cloudnativecourse/lab5-grpc/movieapi"
 	//"labs/lab5/movieapi"
-	"github.com/NaseerLodge/CloudNativeCourse/labs/lab5/movieapi"
+	"github.com/Ntambe25/CloudNativeCourse/labs/lab5/movieapi"
 
 	"google.golang.org/grpc"
 )
@@ -21,6 +21,8 @@ const (
 )
 
 // server is used to implement movieapi.MovieInfoServer
+// Struct called Server that inherits all methods of movieapi.MovieInfoServer,
+// but none of the methods have been implemented yet
 type server struct {
 	movieapi.UnimplementedMovieInfoServer
 }
@@ -41,10 +43,13 @@ func (s *server) GetMovieInfo(ctx context.Context, in *movieapi.MovieRequest) (*
 	//This if-else block checks whether the movie title is present in the moviedb map.
 	//If it is not found, reply=empty.
 	//If it is found, the movie's details are extracted from the database and filled into the movieapi.MovieReply object.
+	// Movie's details are sent through val
 	if val, ok := moviedb[title]; !ok { // Title not present in database
+		// If key is not present, "MovieReply" object is returned with nil error
 		return reply, nil
 	} else {
 
+		// If key is present, 'else' block is executed
 		//Converts year from string to integer
 		if year, err := strconv.Atoi(val[0]); err != nil {
 			//Error check
@@ -62,12 +67,11 @@ func (s *server) GetMovieInfo(ctx context.Context, in *movieapi.MovieRequest) (*
 		reply.Cast = append(reply.Cast, cast...)
 
 	}
-
 	return reply, nil
 
 }
 
-// GetMovieInfo implements movieapi.MovieInfoServer
+// SetMovieInfo implements movieapi.MovieInfoServer
 func (s *server) SetMovieInfo(ctx context.Context, in *movieapi.MovieData) (*movieapi.Status, error) {
 
 	// Get movie data
@@ -102,6 +106,7 @@ func (s *server) SetMovieInfo(ctx context.Context, in *movieapi.MovieData) (*mov
 }
 
 func main() {
+
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
