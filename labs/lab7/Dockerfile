@@ -1,5 +1,7 @@
+# Alpine is a Lightweight Linux used for building containerized applications.
 FROM golang:1.19-alpine AS build
 
+# Setting the working directory
 WORKDIR /app
 
 COPY go.mod ./
