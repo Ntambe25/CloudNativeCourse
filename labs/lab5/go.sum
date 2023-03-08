@@ -1,5 +1,7 @@
 github.com/NaseerLodge/CloudNativeCourse v0.0.0-20230222153033-6b7d3bd8ffe1 h1:yfcaAqVk/TMj5eCwqjtB4Oog+kxiAVvapl/m5/yND7w=
 github.com/NaseerLodge/CloudNativeCourse v0.0.0-20230222153033-6b7d3bd8ffe1/go.mod h1:vJexCHshSm0QFhT6FZRWAgEwXgM+hsDrlELE5t3SXdA=
+github.com/Ntambe25/CloudNativeCourse v0.0.0-20230308131001-90198a408501 h1:dJSs8MwkMVCnTdm+ivqXFNVgijbZDrk25hdIeCNWdss=
+github.com/Ntambe25/CloudNativeCourse v0.0.0-20230308131001-90198a408501/go.mod h1:gb0oONDeAAPols8p5NafCR3ZBWdfBWXr3WDihQX3llA=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/golang/protobuf v1.5.2 h1:ROPKBNFfQgOUMifHyP+KYbvpjbdoFNs+aK7DXlji0Tw=
 github.com/golang/protobuf v1.5.2/go.mod h1:XVQd3VNwM+JqD3oG2Ue2ip4fOMUkwXdXDdiuN0vRsmY=
