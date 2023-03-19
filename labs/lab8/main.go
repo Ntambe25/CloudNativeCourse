@@ -1,10 +1,12 @@
-// Example use of Go mongo-driver
 package main
 
 import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"strconv"
+	"sync"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,14 +19,20 @@ const (
 	mongodbEndpoint = "mongodb://172.17.0.2" // Find this from the Mongo container
 )
 
+var RWLock sync.RWMutex
+var col *mongo.Collection
+var ctx context.Context
+
+type dollars float32
+
+func (d dollars) String() string { return fmt.Sprintf("$%.2f", d) }
+
 type Post struct {
 	ID        primitive.ObjectID `bson:"_id"`
-	Title     string             `bson:"title"`
-	Body      string             `bson:"body"`
-	Tags      []string           `bson:"tags"`
-	Comments  uint64             `bson:"comments"`
+	Clothing  string             `bson:"clothing"`
+	Price     dollars            `bson:"price"`
+	Tags      string             `bson:"tags"`
 	CreatedAt time.Time          `bson:"created_at"`
-	UpdatedAt time.Time          `bson:"updated_at"`
 }
 
 func main() {
@@ -41,28 +49,15 @@ func main() {
 	// Disconnect
 	defer client.Disconnect(ctx)
 
-	// select collection from database
-	col := client.Database("blog").Collection("posts")
+	col = client.Database("blog").Collection("posts")
 
-	// Insert one
-	res, err := col.InsertOne(ctx, &Post{
-		ID:        primitive.NewObjectID(),
-		Title:     "post",
-		Tags:      []string{"mongodb"},
-		Body:      `MongoDB is a NoSQL database`,
-		CreatedAt: time.Now(),
-	})
-	fmt.Printf("inserted id: %s\n", res.InsertedID.(primitive.ObjectID).Hex())
-
-	// filter posts tagged as mongodb
-	filter := bson.M{"tags": bson.M{"$elemMatch": bson.M{"$eq": "mongodb"}}}
-
-	// find one document
-	var p Post
-	if col.FindOne(ctx, filter).Decode(&p); err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("post: %+v\n", p)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/list", list)
+	mux.HandleFunc("/create", create)
+	mux.HandleFunc("/delete", delete)
+	mux.HandleFunc("/price", price)
+	mux.HandleFunc("/update", update)
+	log.Fatal(http.ListenAndServe(":8000", mux))
 
 }
 
@@ -70,4 +65,101 @@ func checkError(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func list(w http.ResponseWriter, req *http.Request) {
+
+	cursor, err := col.Find(ctx, bson.M{})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cursor.Close(ctx)
+	for cursor.Next(ctx) {
+		var episode bson.M
+		if err = cursor.Decode(&episode); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(episode)
+	}
+
+}
+
+func create(w http.ResponseWriter, req *http.Request) {
+
+	item := req.URL.Query().Get("item")
+	price := req.URL.Query().Get("price")
+	priceFloat, _ := strconv.ParseFloat(price, 32)
+
+	fmt.Println("ITEM : ", item)
+	fmt.Println("PRICE: ", priceFloat)
+
+	res, err := col.InsertOne(ctx, &Post{
+		ID:        primitive.NewObjectID(),
+		Clothing:  item,
+		Price:     dollars(priceFloat),
+		Tags:      "clothing",
+		CreatedAt: time.Now(),
+	})
+
+	if err == nil {
+		fmt.Printf("inserted id: %s\n", res.InsertedID.(primitive.ObjectID).Hex())
+	}
+
+}
+
+func delete(w http.ResponseWriter, req *http.Request) {
+
+	item := req.URL.Query().Get("item")
+	result, err := col.DeleteMany(ctx, bson.M{"clothing": item})
+	if err != nil {
+		log.Fatal(err)
+	} else {
+		fmt.Printf("DeleteMany removed %v document(s)\n", result.DeletedCount)
+	}
+	
+}
+
+func price(w http.ResponseWriter, req *http.Request) {
+
+	item := req.URL.Query().Get("item")
+
+	var post Post
+	err := col.FindOne(ctx, bson.M{"clothing": item}).Decode(&post);
+	
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+    	return
+    }
+	fmt.Fprintf(w, "Price of %s:%s\n", item, post.Price)
+}
+
+func update(w http.ResponseWriter, req *http.Request) {
+	
+	item := req.URL.Query().Get("item")
+	price := req.URL.Query().Get("price")
+	priceFloat, err := strconv.ParseFloat(price, 32)
+
+
+	if err != nil {
+		http.Error(w, "Invalid Price Value.", http.StatusNotFound)
+		return
+	}
+
+	// adds item
+	filter := bson.M{"clothing": item}
+	update := bson.M{"$set": bson.M{"price": priceFloat}}
+
+	result, err := col.UpdateOne(ctx, filter, update)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	if result.ModifiedCount == 0 {
+		http.Error(w, fmt.Sprintf("No Such Item. %q", item), http.StatusNotFound)
+		return
+	}
+
+	fmt.Println("Updated %d Document(s). ", result.ModifiedCount)
 }
