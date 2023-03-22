@@ -107,6 +107,7 @@ func create(w http.ResponseWriter, req *http.Request) {
 
 }
 
+// Delete Function (In this case all items using DeleteMany)
 func delete(w http.ResponseWriter, req *http.Request) {
 
 	item := req.URL.Query().Get("item")
@@ -119,6 +120,7 @@ func delete(w http.ResponseWriter, req *http.Request) {
 	
 }
 
+// Price Function (Returns the price of an item)
 func price(w http.ResponseWriter, req *http.Request) {
 
 	item := req.URL.Query().Get("item")
@@ -133,10 +135,17 @@ func price(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "Price of %s:%s\n", item, post.Price)
 }
 
+
+// Update Function 
+// takes w as type "http.ResponseWriter" used to write response back to the client
+// and req is request received by the server
 func update(w http.ResponseWriter, req *http.Request) {
 	
+	// gets "item" and "price" from the HTTP request
 	item := req.URL.Query().Get("item")
 	price := req.URL.Query().Get("price")
+
+	// converts the price(string) to floating point number
 	priceFloat, err := strconv.ParseFloat(price, 32)
 
 
@@ -145,10 +154,12 @@ func update(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// adds item
+	// Creates the new "bson.M" object with key-value pair
 	filter := bson.M{"clothing": item}
+	// Defining the update operation
 	update := bson.M{"$set": bson.M{"price": priceFloat}}
 
+	// Opdate operation is being performed using filter, update, and ctx
 	result, err := col.UpdateOne(ctx, filter, update)
 
 	if err != nil {
@@ -156,6 +167,7 @@ func update(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// If reult of update operation failed (i.e Modified Documents == 0), Erro is Printed
 	if result.ModifiedCount == 0 {
 		http.Error(w, fmt.Sprintf("No Such Item. %q", item), http.StatusNotFound)
 		return

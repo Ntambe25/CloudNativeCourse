@@ -5,28 +5,29 @@ list()
     curl -w "\n" "http://localhost:8000/list"
 }
 
-price()
-{
-    echo "Price of item: pant"
-    curl -w "\n" "http://localhost:8000/price?item=pant"
-}
-
 create()
 {
-    echo "adding item: $1 in database of price: $2"
-    curl -w "\n" "http://localhost:8000/create?item=$1&price=$2"
+    echo "adding item: socks in database of price: $10"
+    curl -w "\n" "http://localhost:8000/create?item=socks&price=10"
 }
+
+price()
+{
+    echo "Price of item: socks"
+    curl -w "\n" "http://localhost:8000/price?item=socks"
+}
+
 
 update()
 {
-    echo "updating price of item: $1 with price: $2"
-    curl -w "\n" "http://localhost:8000/update?item=$1&price=$2"
+    echo "updating price of item: socks with price: $25"
+    curl -w "\n" "http://localhost:8000/update?item=socks&price=25"
 }
 
 delete()
 {
-    echo "deleting item: $1 from database"
-    curl -w "\n" "http://localhost:8000/delete?item=$1"
+    echo "deleting item: socks from database"
+    curl -w "\n" "http://localhost:8000/delete?item=socks"
 }
  
 printf "Enter input--->\nlist\nprice\ncreate\nupdate\ndelete\n"
