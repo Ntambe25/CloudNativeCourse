@@ -1,7 +1,7 @@
 To start the Mongodb Container - sudo docker container start mongodb
 To stop the Mongodb Container - sudo docker container stop mongodb
-
-To run the Webserver Docker Container - sudo docker container run -p 8000:8000 mongo_webserver
+sudo docker container run -p 8000:8000 mongo_webserver
+To run the Webserver Docker Container - 
 
 CURL Commands
 
