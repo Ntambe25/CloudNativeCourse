@@ -4,50 +4,33 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
+	//"net/url"
 )
 
-type Recommendation struct {
-	Title       string
-	Description string
+type RecommendationResponse struct {
+    Recommendations []string `json:"recommendations"`
 }
 
-func main() {
-	http.HandleFunc("/recommend", handleRecommendation)
-    fmt.Println("Listening on port 8080...")
-    http.ListenAndServe(":8080", nil)
-}
 
-func handleRecommendation(w http.ResponseWriter, r *http.Request) {
-    var genre string
-    if r.Method == "POST" {
-        genre = r.FormValue("genre")
-    } else {
-        genre = r.URL.Query().Get("genre")
-    }
+func recommendByCosineHandler(w http.ResponseWriter, req *http.Request) {
+    movieTitle := req.URL.Query().Get("movie_title")
+    numRecommendations := req.URL.Query().Get("num_recommendations")
 
-    // Make API call to machine learning model container
-    mlURL := "http://ml-container:5000/recommend?genre=" + url.QueryEscape(genre)
-    response, err := http.Get(mlURL)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-    defer response.Body.Close()
+    recommendations := recommend_by_cosine(movie_title, num_recommendations)
 
-	var recommendations []Recommendation
-    err = json.NewDecoder(response.Body).Decode(&recommendations)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    responseJSON, err := json.Marshal(recommendations)
+    response := RecommendationResponse{recommendations}
+    jsonResponse, err := json.Marshal(response)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
     w.Header().Set("Content-Type", "application/json")
-    w.Write(responseJSON)
+    w.Write(jsonResponse)
+}
+
+func main() {
+	http.HandleFunc("/recommend_by_cosine", recommendByCosineHandler)
+    fmt.Println("Starting Server on Port 8080...")
+    http.ListenAndServe(":8080", nil)
 }
