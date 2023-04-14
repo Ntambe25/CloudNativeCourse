@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package movieapi;
+
+message MovieRecommendation {
+  string moviename = 1;
+  int32 no_of_recommendations = 2;
+}
+
+message RecommendedMovies_Array {
+  repeated string Recommended_Movies = 1;
+}
+
+service Movie_Recommendation {
+  rpc Movie_Recommendation_by_cnn (MovieRecommendation) returns (RecommendedMovies_Array) {}
+}
