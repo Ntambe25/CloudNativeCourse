@@ -14,10 +14,10 @@ def get_recommendations():
 
 def movieapi(st, n):
     with grpc.insecure_channel('localhost:50051') as channel:
-        stub = movieapi_pb2_grpc.Movie_RecommendationStub(channel)
-        request = movieapi_pb2.MovieRecommendation(moviename=st, no_of_recommendations=n)
-        response = stub.Movie_Recommendation_by_cnn(request)
-        return response.Recommended_Movies
+        stub = movieapi_pb2_grpc.MovieRecommendationStub(channel)
+        request = movieapi_pb2.MovieRecommendationRequest(moviename=st, no_of_recommendations=n)
+        response = stub.GetMovieRecommendations(request)
+        return response.recommended_movies
 
 if __name__ == '__main__':
     app.run()
